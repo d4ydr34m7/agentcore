@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+env/
+venv/
+*.env
+
+# VS Code
+.vscode/
+
+# Data and logs
+data/
+logs/
+*.log
+
+# OS files
+.DS_Store
+
+# Test outputs
+*.coverage
+htmlcov/
+coverage.xml
+
+# AWS / Credentials
+*.pem
+*.key
+*.aws/
+secrets.json
