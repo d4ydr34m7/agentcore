@@ -30,3 +30,10 @@ coverage.xml
 *.key
 *.aws/
 secrets.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfvars
