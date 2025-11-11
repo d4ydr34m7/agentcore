@@ -20,3 +20,20 @@ Keep the setup lightweight and low-cost while learning and testing.
 
 ### Current Status
 Infra not deployed yet — will start with basic S3 + Lambda setup first.
+
+
+### Terraform commands
+terraform -chdir=infra init
+
+- Format and validate configuration
+  terraform -chdir=infra fmt
+  terraform -chdir=infra validate
+
+- Preview changes 
+  terraform -chdir=infra plan
+
+- Apply changes 
+  terraform -chdir=infra apply
+
+- Tear down resources when not needed
+  terraform -chdir=infra destroy
