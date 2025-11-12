@@ -1,3 +1,5 @@
 env: dev
 model_id: anthropic.claude-3-haiku
 data_path: data/transactions.csv
+region: us-east-1
+use_bedrock: true
