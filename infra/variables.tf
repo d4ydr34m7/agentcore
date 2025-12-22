@@ -2,9 +2,9 @@ variable "project" {
   type    = string
   default = "agentcore"
 }
-variable "env"         { 
-    type = string  
-    default = "dev" 
+variable "env" {
+  type    = string
+  default = "dev"
 }
 variable "aws_region" {
   type    = string

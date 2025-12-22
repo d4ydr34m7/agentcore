@@ -1,7 +1,7 @@
 # S3 
 resource "aws_s3_bucket" "data" {
   bucket        = "${local.name_prefix}-data"
-  force_destroy = false  
+  force_destroy = false
 }
 
 # Basic server-side encryption + block public access

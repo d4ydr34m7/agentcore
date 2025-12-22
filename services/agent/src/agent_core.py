@@ -1,21 +1,24 @@
 import csv
-from pathlib import Path
+import io
+import boto3
 from config import get_cfg
 from bedrock_client import llm_ask
 
-def load_transactions(file_path: Path):
+s3 = boto3.client("s3")
+
+def load_transactions_s3(bucket: str, key: str):
     try:
-        with open(file_path, newline="") as f:
-            return list(csv.DictReader(f))
-    except FileNotFoundError:
+        obj = s3.get_object(Bucket=bucket, Key=key)
+        body = obj["Body"].read().decode("utf-8")
+        return list(csv.DictReader(io.StringIO(body)))
+    except Exception:
         return []
 
 def answer(query: str) -> str:
     cfg = get_cfg()
-    txns = load_transactions(Path(cfg["data_path"]))
-
+    txns = load_transactions_s3(cfg["data_bucket"], cfg["data_key"])
     q = query.lower().strip()
-    # cheap/local skills first
+   
     if "total" in q and txns:
         total = sum(float(t["amount"]) for t in txns)
         return f"Total transaction amount: ${total:.2f}"
