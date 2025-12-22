@@ -37,3 +37,14 @@ secrets.json
 *.tfstate.*
 crash.log
 terraform.tfvars
+infra/.terraform/
+terraform.tfstate*
+
+# Lambda build artifacts
+agentcore-dev-agent.zip
+
+# Python deps / local installs
+services/agent/src/pyyaml*
+services/agent/src/yaml/
+services/agent/src/*.dist-info
+services/agent/src/*.so
