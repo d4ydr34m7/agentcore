@@ -11,5 +11,5 @@ def get_cfg():
         "data_bucket": os.getenv("DATA_BUCKET", "agentcore-dev-data"),
         "data_key": os.getenv("DATA_KEY", "data/transactions.csv"),
 
-        "use_bedrock": os.getenv("USE_BEDROCK", "true").lower() == "true",
+        "use_bedrock": os.getenv("USE_BEDROCK", "false").lower() == "true",
     }

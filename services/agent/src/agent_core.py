@@ -147,10 +147,58 @@ def answer(query: str):
             "source": source
         }
 
-    # Fall back to Bedrock (for natural language)
-    if cfg.get("use_bedrock", False):
-        text = llm_ask(query, cfg["model_id"], cfg["region"])
-        return {"ok": True, "result": {"llm_answer": text}, "source": source}
+    # ✅ Bedrock routing guard: only treat as "skill" when it matches our known command shapes
+    skill_exact = q in {"health", "healthcheck", "status", "summary", "insights", "top merchants", "top types"}
+    skill_prefix = q.startswith("count") or q.startswith("total") or q.startswith("sum")
+    looks_like_skill = skill_exact or skill_prefix
+
+    # Bedrock fallback ONLY for open-ended questions (not skill-like queries),
+    # grounded on computed facts + a few sample rows for better reasoning.
+    if cfg.get("use_bedrock", False) and not looks_like_skill and txns:
+        amounts = [_to_float(t.get("amount")) for t in txns]
+        sorted_amounts = sorted(amounts, reverse=True)
+
+        sample_rows = []
+        for t in txns[:5]:
+            sample_rows.append({
+                "amount": t.get("amount"),
+                "type": t.get("type"),
+                "status": t.get("status"),
+                "merchant": t.get("merchant"),
+            })
+
+        facts = {
+            "rows": len(txns),
+            "columns": list(txns[0].keys()),
+            "total_amount": round(sum(amounts), 2),
+            "avg_amount": round(sum(amounts) / len(amounts), 2) if amounts else 0.0,
+            "min_amount": round(min(amounts), 2) if amounts else 0.0,
+            "max_amount": round(max(amounts), 2) if amounts else 0.0,
+            "largest_amounts": [round(x, 2) for x in sorted_amounts[:5]],
+            "count_pending": sum(1 for t in txns if t.get("status", "").lower() == "pending"),
+            "top_merchants": Counter([t.get("merchant", "").strip() or "unknown" for t in txns]).most_common(5),
+            "top_types": Counter([t.get("type", "").lower().strip() or "unknown" for t in txns]).most_common(5),
+            "sample_rows": sample_rows,
+        }
+
+        prompt = (
+            "You are an analyst reviewing transaction data.\n"
+            "Use ONLY the facts below. Give a direct answer (no disclaimers).\n"
+            "Return 3 sections: (1) Recurring expenses, (2) Anomalies, (3) Recommendations.\n"
+            f"FACTS: {facts}\n\n"
+            f"QUESTION: {query}\n"
+        )
+
+        try:
+            text = llm_ask(prompt, cfg["model_id"], cfg["region"])
+            return {"ok": True, "result": {"llm_answer": text}, "source": source}
+        except Exception as e:
+            return {
+                "ok": False,
+                "message": "Bedrock call failed. Local skills still work.",
+                "error": str(e),
+                "source": source
+            }
 
     return {
         "ok": False,
