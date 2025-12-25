@@ -1,13 +1,28 @@
-# AgentCore Project
+# AgentCore – Serverless Analytics Agent
 
-Learning project to build a custom AI agent using AWS AgentCore.
+## What this is
+A serverless analytics agent that answers deterministic questions locally (fast + cheap) and uses an LLM for open-ended insights (grounded, low-hallucination).
 
-### Current Phase
-- Setting up basic project structure
-- Writing docs and placeholders
-- No AWS resources or code yet
+## Architecture
+Client → API Gateway (HTTP API) → Lambda → (S3 dataset + Bedrock LLM)
 
-### Next Steps
-- Add mock data
-- Build first local agent flow
-- Later connect to Bedrock (Claude 3 Haiku)
+- S3: stores `data/transactions.csv`
+- Lambda: intent routing + local skills + grounded Bedrock fallback
+- Bedrock: Claude (Haiku) for reasoning on computed facts
+- API Gateway: exposes `POST /query`
+
+## How it works
+### Local skills (deterministic)
+Examples: `summary`, `insights`, `top merchants`, `count pending`, `total`
+
+### LLM fallback (only for open-ended questions)
+- Triggered only when query doesn’t match known skill shapes
+- Prompt is grounded using computed facts + a few sample rows (not raw dataset)
+
+## API
+### Endpoint
+`POST /query`
+
+### Request
+```json
+{ "query": "top merchants" }
